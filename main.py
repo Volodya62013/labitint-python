@@ -22,21 +22,19 @@ myfont, score = font.SysFont('Papyrus', 70), 0
 
 gameres = ''
 
-fon = Tubik(0, 0, 'fon.jpg', WIN_W, WIN_H)
+fon = Tubik(0, 0, 'src/fon.jpg', WIN_W, WIN_H)
 
-tanos = Player(20, 400, "player.jpg", 70, 50, 1)
-tanos2 = Player(610, 20, "player.jpg", 70, 50, 1)
+tanos = Player(20, 400, "src/player.jpg", 70, 50, 1)
+tanos2 = Player(610, 20, "src/player.jpg", 70, 50, 1)
 
-sigmaDeD = Enemy(315, 225, "sigmatanos.jpg", 70, 50, 1, 1)
+sigmaDeD = Enemy(315, 225, "src/sigmatanos.jpg", 70, 50, 1, 1)
 
-hito = Tubik(0, 150, 'hito.jpg', 70, 70)
+hito = Tubik(0, 150, 'src/hito.jpg', 70, 70)
 
 wall1 = Wall(150, 0, 50, 450)
 wall2 = Wall(550, 0, 50, 450)
 
-walls = sprite.Group()
-walls.add(wall1)
-walls.add(wall2)
+walls = [wall1, wall2]
 players = sprite.Group()
 players.add(tanos)
 players.add(tanos2)
@@ -49,8 +47,9 @@ while game:
         # отобразить картинку фона
         fon.draw(window)
 
-        walls.draw(window)
-        walls.outline(window)
+        for wall in walls:
+            wall.draw(window)
+            wall.outline(window)
 
         scoretxt = myfont.render(str(score), True, (204, 0, 204))
         gamerestxt = myfont.render(str(gameres), True, (204, 0, 204))
@@ -59,17 +58,26 @@ while game:
         hito.draw(window)
 
         sigmaDeD.draw(window)
-        players.draw(window)
+        for p in players:
+            p.draw(window)
 
         tanos.update(K_w, K_s, K_a, K_d)
         tanos2.update(K_UP, K_DOWN, K_LEFT, K_RIGHT)
         sigmaDeD.updateY(0, 470)
 
-        if sprite.spritecollide(sigmaDeD, players, False):
-            sigma.sleep(0.5)
+            
+        if sprite.collide_rect(tanos, sigmaDeD):
             tanos.rect.x = 20
             tanos.rect.y = 400
+            sigma.sleep(0.5)
             score -= 1
+
+        if sprite.collide_rect(tanos2, sigmaDeD):
+            tanos2.rect.x = 610
+            tanos2.rect.y = 20
+            sigma.sleep(0.5)
+            score -= 1
+
 
         if sprite.spritecollide(hito, players, False):
             hito.rect.x = 1000
@@ -88,8 +96,13 @@ while game:
             score -= 1
 
         if sprite.groupcollide(walls, players, False, False):
-            tanos.rect.x = 20
-            tanos.rect.y = 400
+            for w in walls:
+                if sprite.collide_rect(tanos, w):
+                    tanos.rect.x = 20
+                    tanos.rect.y = 400
+                if sprite.collide_rect(tanos2, w):
+                    tanos2.rect.x = 610
+                    tanos2.rect.y = 20
 
         if score >= 20:
             gameres = 'Win!'
